@@ -90,9 +90,9 @@ Endpoint = ${end}
 # Add our peer configuration to the server config
 echo "
 
-# adam begin
+# ${the_client} begin
 [Peer]
 Publickey = ${clientPub}
 PresharedKey = ${pre}
 AllowedIPs = 10.254.132.100/32
-# adam end" | tee -a wg0.conf
+# ${the_client} end" | tee -a wg0.conf
