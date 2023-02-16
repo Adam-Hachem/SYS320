@@ -43,7 +43,7 @@ else
 fi
 
 # Menu for selecting output format
-while getopts 'icwm' OPTION ; do
+while getopts 'icwmu' OPTION ; do
 
 	case "$OPTION" in
 		i) iptables=${OPTION}
@@ -54,8 +54,10 @@ while getopts 'icwm' OPTION ; do
 		;;
 		m) mac=${OPTION}
 		;;
+		u) ciscourl=${OPTION}
+		;;
 		*)
-			echo "Invalid response.
+			echo "Invalid response."
 			exit 1
 		;;
 
@@ -100,7 +102,7 @@ then
 	echo 'Windows firewall file created: badIPs.netsh'
 fi
 
-
+# If the user selected Mac option, create a correctly formatted pf.conf file
 if [[ ${mac} ]]
 then
 	echo '
@@ -121,3 +123,17 @@ then
 	echo 'Mac firewall file created: pf.conf'
 fi
 
+# If the user selected Cisco URL option, create a correctly formatted ciscothreats.txt
+if [[ ${ciscourl} ]]
+then
+	wget https://raw.githubusercontent.com/botherder/targetedthreats/master/targetedthreats.csv -O /tmp/targetedthreats.csv
+	awk '/domain/ {print}' /tmp/targetedthreats.csv | awk -F \" '{print $4}' | sort -u > threats.txt
+	echo 'class-map match-any BAD_URLS' | tee ciscothreats.txt
+	for eachip in $(cat threats.txt)
+	do
+		echo "match protocol http host \"${eachip}\"" | tee -a ciscothreats.txt
+	done
+	rm threats.txt
+	clear
+	echo 'Cisco URL Filter file created: ciscothreats.txt'
+fi
